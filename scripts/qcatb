@@ -1,0 +1,90 @@
+#! /bin/bash
+
+#set default values
+DEP="--no-deps"
+COL="--force-color"
+STATUS="| tee"
+PRINT=false
+
+#check arguments
+for ARG in "$@"
+do
+
+  #check for help
+  if [ $ARG = "-h" ] || [ $ARG = "--help" ]
+  then
+    echo "Simple script for building the package corresponding to the current directory"
+    echo "If multiple errors are encountered the first one is reprinted last"
+    echo "Optional arguments:"
+    echo "    -h or --help: this help message"
+    echo "    -d or --depends: builds dependences"
+    echo "    -c or --no-color: removes color information from output"
+    echo "    -s or --no-status: disables status updates until build finished"
+    exit 1
+  fi
+
+  #check for dependences flag
+  if [ $ARG = "-d" ] || [ $ARG = "--depends" ]
+  then
+    DEP=""
+  fi 
+
+  #check for no color flag
+  if [ $ARG = "-c" ] || [ $ARG = "--no-color" ]
+  then
+    COL="--no-color"
+  fi 
+
+  #check for no status flag
+  if [ $ARG = "-s" ] || [ $ARG = "--no-status" ]
+  then
+    STATUS="--no-status >>"
+    PRINT=true
+  fi 
+done
+
+#get package to build
+PACKAGE="$(catkin list --this)"
+PACKAGE=${PACKAGE:2}
+
+echo "Building $PACKAGE..."
+echo
+
+#get ready to grab output
+TEMP=$(mktemp)
+
+#build and catch output
+eval "catkin build $PACKAGE $DEP $COL $STATUS $TEMP 2>&1"
+
+#print output if status updates were suppressed (skips Workspace info)
+if [ $PRINT ]
+then
+  OUT_START=$(grep -n -m 1 "\[build\]" $TEMP | cut -f1 -d:)
+  tail -n +${OUT_START} $TEMP
+fi
+
+#check output for errors
+ERR_START=$(grep -n -m 1 "Errors" $TEMP | cut -f1 -d:)
+
+echo
+
+#if multiple errors reprint first one
+if [ "$ERR_START" != "" ]
+then
+  ERR_END=$(grep -n -m2 "In file included from " $TEMP | tail -n1 | cut -f1 -d:)
+
+  if [ "$ERR_END" != "$ERR_START" ]
+  then
+    echo "Multiple compilation errors encountered, reprinting first error:"
+    echo "................................................................"
+    #sed -n "${ERR_START},${ERR_END}p" $TEMP
+    awk -v s="$ERR_START" -v e="$ERR_END" 'NR>s&&NR<e' $TEMP
+    echo
+  fi
+  echo "FAILED BUILD"
+else 
+  echo "SUCESSFUL BUILD"
+fi
+
+#clean up
+rm $TEMP

@@ -1,0 +1,11 @@
+<package>
+  <name>ros_helpers</name>
+  <version>0.0.0</version>
+  <description>ros_helpers</description>
+  <maintainer email="ztaylor@ethz.ch">Zachary Taylor</maintainer>
+
+  <license>See package</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>catkin_simple</buildtool_depend>
+</package>

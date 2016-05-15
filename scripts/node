@@ -1,0 +1,9 @@
+#! /bin/bash
+
+killall roscore > /dev/null 2>&1
+killall gzserver > /dev/null 2>&1
+killall gzclient > /dev/null 2>&1
+node_manager
+killall roscore > /dev/null 2>&1
+killall gzserver > /dev/null 2>&1
+killall gzclient > /dev/null 2>&1
