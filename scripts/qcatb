@@ -85,15 +85,19 @@ echo
 #if multiple errors reprint first one
 if [ "$ERR_START" != "" ]
 then
-  ERR_END=$(grep -n -m2 "error:" $TEMP | tail -n1 | cut -f1 -d:)
-
-  if [ "$ERR_END" != "$((ERR_START+1))" ]
+  ERR_END=$(grep -n -m2 "error:\|note:" $TEMP)
+  NUM_ERR=$(wc -l <<<"$(echo "$ERR_END")")
+  if [ "$NUM_ERR" != 1 ]
   then
-    echo "Multiple compilation errors encountered, reprinting first error:"
-    echo "................................................................"
-    awk -v s="$ERR_START" -v e="$ERR_END" 'NR>s&&NR<e' $TEMP
-    echo
+    ERR_END=$(echo "$ERR_END" | tail -n1 | cut -f1 -d:)
+  else
+    ERR_END=$(grep -n -m2 "Error " $TEMP)
   fi
+
+  echo "Errors encountered, reprinting first error:"
+  echo "................................................................"
+  awk -v s="$ERR_START" -v e="$ERR_END" 'NR>s&&NR<e' $TEMP
+  echo
   echo "FAILED BUILD"
 else 
   echo "SUCESSFUL BUILD"
