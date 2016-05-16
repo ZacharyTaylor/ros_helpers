@@ -5,6 +5,7 @@ DEP="--no-deps"
 COL="--force-color"
 STATUS="| tee"
 PRINT=false
+UNI=true
 
 #check arguments
 for ARG in "$@"
@@ -20,6 +21,7 @@ do
     echo "    -d or --depends: builds dependences"
     echo "    -c or --no-color: removes color information from output"
     echo "    -s or --no-status: disables status updates until build finished"
+    echo "    -u or --no-unicode: removes unicode characters (only works in combination with -s)"
     exit 1
   fi
 
@@ -41,6 +43,12 @@ do
     STATUS="--no-status >>"
     PRINT=true
   fi 
+
+  #check for no unicode flag
+  if [ $ARG = "-u" ] || [ $ARG = "--no-unicode" ]
+  then
+    UNI=false
+  fi 
 done
 
 #get package to build
@@ -51,7 +59,9 @@ echo "Building $PACKAGE..."
 echo
 
 #get ready to grab output
-TEMP=$(mktemp)
+#TEMP=$(mktemp)
+TEMP="./temp.txt"
+touch $TEMP
 
 #build and catch output
 eval "catkin build $PACKAGE $DEP $COL $STATUS $TEMP 2>&1"
@@ -59,6 +69,12 @@ eval "catkin build $PACKAGE $DEP $COL $STATUS $TEMP 2>&1"
 #print output if status updates were suppressed (skips Workspace info)
 if [ $PRINT ]
 then
+  #strip unicode (unfortunately python outputs them as ? so all ? will also be removed)
+  if [ !UNI ]
+  then
+    sed -i 's/?//g' $TEMP
+  fi
+  
   OUT_START=$(grep -n -m 1 "\[build\]" $TEMP | cut -f1 -d:)
   tail -n +${OUT_START} $TEMP
 fi
@@ -71,13 +87,12 @@ echo
 #if multiple errors reprint first one
 if [ "$ERR_START" != "" ]
 then
-  ERR_END=$(grep -n -m2 "In file included from " $TEMP | tail -n1 | cut -f1 -d:)
+  ERR_END=$(grep -n -m2 "error:" $TEMP | tail -n1 | cut -f1 -d:)
 
-  if [ "$ERR_END" != "$ERR_START" ]
+  if [ "$ERR_END" != "$((ERR_START+1))" ]
   then
     echo "Multiple compilation errors encountered, reprinting first error:"
     echo "................................................................"
-    #sed -n "${ERR_START},${ERR_END}p" $TEMP
     awk -v s="$ERR_START" -v e="$ERR_END" 'NR>s&&NR<e' $TEMP
     echo
   fi
@@ -87,4 +102,4 @@ else
 fi
 
 #clean up
-rm $TEMP
+#rm $TEMP
