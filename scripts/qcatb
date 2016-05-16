@@ -59,9 +59,7 @@ echo "Building $PACKAGE..."
 echo
 
 #get ready to grab output
-#TEMP=$(mktemp)
-TEMP="./temp.txt"
-touch $TEMP
+TEMP=$(mktemp)
 
 #build and catch output
 eval "catkin build $PACKAGE $DEP $COL $STATUS $TEMP 2>&1"
@@ -102,4 +100,4 @@ else
 fi
 
 #clean up
-#rm $TEMP
+rm $TEMP
