@@ -1,0 +1,10 @@
+{
+  "shell_cmd": "~/catkin_ws/devel/bin/qcatb -c -s -u",
+
+  "variants" : [
+      {
+        "name" : "Build dependences",
+        "shell_cmd": "~/catkin_ws/devel/bin/qcatb -d -c -s -u"
+      }
+    ]
+}

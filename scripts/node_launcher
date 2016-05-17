@@ -1,12 +1,17 @@
 #! /bin/bash
 
+#source ros
 source /opt/ros/kinetic/setup.bash
 source ~/catkin_ws/devel/setup.bash
 
+#make sure ros and gazebo are not running
 killall roscore > /dev/null 2>&1
 killall gzserver > /dev/null 2>&1
 killall gzclient > /dev/null 2>&1
+
 node_manager
+
+#make sure ros and gazebo are shutdown
 killall roscore > /dev/null 2>&1
 killall gzserver > /dev/null 2>&1
 killall gzclient > /dev/null 2>&1

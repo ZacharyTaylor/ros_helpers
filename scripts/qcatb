@@ -87,11 +87,11 @@ if [ "$ERR_START" != "" ]
 then
   ERR_END=$(grep -n -m 2 "error:\|note:" $TEMP)
   NUM_ERR=$(wc -l <<<"$(echo "$ERR_END")")
-  if [ "$NUM_ERR" != 1 ]
+  if [ "$NUM_ERR" != "1" ]
   then
     ERR_END=$(echo "$ERR_END" | tail -n1 | cut -f1 -d:)
   else
-    ERR_END=$(grep -n -m 1 "Error " $TEMP | cut -f1 -d:)
+    ERR_END=$(grep -n "Error " $TEMP | tail -n1 | cut -f1 -d:)
   fi
 
   echo "Errors encountered, reprinting first error:"

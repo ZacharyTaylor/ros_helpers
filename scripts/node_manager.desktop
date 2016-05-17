@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Node Manager
+Icon=node_manager.png
+Exec=sh -c "$HOME/catkin_ws/devel/bin/node_launcher" 
+Terminal=false
