@@ -78,25 +78,22 @@ then
 fi
 
 #check output for errors
-ERR_START=$(grep -n -m 1 "Errors" $TEMP | cut -f1 -d:)
+ERR_START=$(grep -n -m 1 "error:" $TEMP | cut -f1 -d:)
 
-echo
-
-#if multiple errors reprint first one
+#if errors reprint first one
 if [ "$ERR_START" != "" ]
 then
-  ERR_END=$(grep -n -m 2 "error:\|note:" $TEMP)
-  NUM_ERR=$(wc -l <<<"$(echo "$ERR_END")")
-  if [ "$NUM_ERR" != "1" ]
+  ERR_END=$(sed -n '/error:/,$p' $TEMP | grep -n -m 2 "error:\|note:\|In file included from" | tail -n1 | cut -f1 -d:)
+  ERR_END=$((ERR_END+$ERR_START-1))
+  if [ "$ERR_END" == "$ERR_START" ]
   then
-    ERR_END=$(echo "$ERR_END" | tail -n1 | cut -f1 -d:)
-  else
-    ERR_END=$(grep -n "Error " $TEMP | tail -n1 | cut -f1 -d:)
+    ERR_END=$(grep -n "Error 1" $TEMP | tail -n1 | cut -f1 -d:)
   fi
 
   echo "Errors encountered, reprinting first error:"
   echo "................................................................"
-  awk -v s="$ERR_START" -v e="$ERR_END" 'NR>s&&NR<e' $TEMP
+  echo
+  awk -v s="$ERR_START" -v e="$ERR_END" 'NR>=s&&NR<e' $TEMP
   echo
   echo "FAILED BUILD"
 else 
